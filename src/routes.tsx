@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage.tsx';
 import VotingPage from './pages/VotingPage.tsx';
 import ResultsPage from './pages/ResultsPage.tsx';
 import AdminDashboard from './pages/AdminDashboard.tsx';
+import LogsPage from './pages/LogsPage.tsx';
 
 export default function Routes() {
   return (
@@ -14,6 +15,7 @@ export default function Routes() {
         <Route path="/vote" element={<VotingPage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/logs" element={<LogsPage />} />
       </ReactRoutes>
     </>
   );
