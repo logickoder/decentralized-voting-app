@@ -185,7 +185,7 @@ export default function VotingPage() {
         <div className="mt-12 p-6 bg-base-100 rounded-box shadow-lg">
           <h3 className="text-lg font-bold mb-4">How voting works</h3>
           <ul className="list-disc list-inside space-y-2 text-base-content opacity-80">
-            <li>Your vote is recorded directly on the Polygon Mumbai blockchain</li>
+            <li>Your vote is recorded directly on the Base blockchain</li>
             <li>Each wallet address can only vote once per election</li>
             <li>Voting is anonymous - your identity is not linked to your choice</li>
             <li>Earn token rewards for participating in the voting process</li>

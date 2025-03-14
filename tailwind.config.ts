@@ -11,14 +11,14 @@ export default {
     extend: {
       colors: {
         primary: {
-          light: '#8B5CF6', // Light purple
-          DEFAULT: '#7C3AED', // Primary purple
-          dark: '#6D28D9' // Dark purple
+          light: '#60A5FA', // Light blue
+          DEFAULT: '#3B82F6', // Primary Blue
+          dark: '#2563EB' // Darker blue
         },
         secondary: {
-          light: '#34D399', // Light green
-          DEFAULT: '#10B981', // Primary green
-          dark: '#059669' // Dark green
+          light: '#34D399', // Complements blue well
+          DEFAULT: '#10B981', // Primary Green
+          dark: '#059669' // Darker green
         },
         neutral: {
           lightest: '#F9FAFB',
@@ -28,7 +28,7 @@ export default {
           darkest: '#9CA3AF'
         },
         blockchain: {
-          polygon: '#8247E5' // Polygon brand color
+          base: '#0052FF' // Base’s brand blue
         }
       },
       fontFamily: {
@@ -45,7 +45,7 @@ export default {
       },
       boxShadow: {
         'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        'button': '0 4px 6px -1px rgba(124, 58, 237, 0.5)'
+        'button': '0 4px 6px -1px rgba(59, 130, 246, 0.5)' // Updated to match new primary blue
       }
     }
   },
@@ -54,19 +54,19 @@ export default {
     themes: [
       {
         voting: {
-          'primary': '#7C3AED', // Purple
-          'primary-focus': '#6D28D9',
+          'primary': '#3B82F6', // Updated to Base blue
+          'primary-focus': '#2563EB',
           'primary-content': '#ffffff',
 
-          'secondary': '#10B981', // Green
+          'secondary': '#10B981', // Unchanged green
           'secondary-focus': '#059669',
           'secondary-content': '#ffffff',
 
-          'accent': '#8247E5', // Polygon color
-          'accent-focus': '#6E35D4',
+          'accent': '#0052FF', // Base’s core blue as accent
+          'accent-focus': '#003ECB',
           'accent-content': '#ffffff',
 
-          'neutral': '#3D4451',
+          'neutral': '#3D4451', // Unchanged
           'neutral-focus': '#2A2E37',
           'neutral-content': '#ffffff',
 
@@ -92,19 +92,19 @@ export default {
           '--border-btn': '1px'
         },
         dark: {
-          'primary': '#8B5CF6', // Lighter purple for dark mode
-          'primary-focus': '#7C3AED',
+          'primary': '#60A5FA', // Lighter Base blue for dark mode
+          'primary-focus': '#3B82F6',
           'primary-content': '#ffffff',
 
-          'secondary': '#34D399', // Lighter green for dark mode
+          'secondary': '#34D399', // Unchanged green
           'secondary-focus': '#10B981',
           'secondary-content': '#ffffff',
 
-          'accent': '#9061F9', // Lighter Polygon color
-          'accent-focus': '#8247E5',
+          'accent': '#1E90FF', // Lighter Base blue for dark mode
+          'accent-focus': '#0052FF',
           'accent-content': '#ffffff',
 
-          'neutral': '#1F2937',
+          'neutral': '#1F2937', // Unchanged
           'neutral-focus': '#111827',
           'neutral-content': '#ffffff',
 

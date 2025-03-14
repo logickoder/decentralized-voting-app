@@ -167,7 +167,7 @@ export default function LogsPage() {
                       <td>{log.timestamp}</td>
                       <td>
                         <a
-                          href={`https://amoy.polygonscan.com/tx/${log.txHash}`}
+                          href={`https://basescan.org/tx/${log.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="btn btn-xs btn-outline btn-accent"
@@ -230,7 +230,7 @@ export default function LogsPage() {
                 <p className="text-sm opacity-80">
                   This page displays a transparent log of all votes cast on the blockchain. Each vote is anonymously
                   recorded with only the voter's wallet address and timestamp, ensuring privacy while maintaining
-                  auditability. Click "View on Explorer" to verify each transaction on Polygon Amoy.
+                  auditability. Click "View on Explorer" to verify each transaction on Base.
                 </p>
               </div>
             </div>

@@ -221,12 +221,12 @@ export default function ResultsPage() {
         {/* Blockchain Information */}
         <div className="mt-12 p-6 bg-base-100 rounded-box shadow-lg">
           <h3 className="text-lg font-bold mb-4">Blockchain Transparency</h3>
-          <p className="mb-4">All voting data is recorded on the Polygon Mumbai blockchain, ensuring complete
+          <p className="mb-4">All voting data is recorded on the Base blockchain, ensuring complete
             transparency and verifiability.</p>
 
           <div className="flex items-center justify-center mt-6">
             <a
-              href="https://mumbai.polygonscan.com"
+              href="https://basescan.org"
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-outline btn-accent gap-2"

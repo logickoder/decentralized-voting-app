@@ -11,7 +11,7 @@ export default function HomePage() {
         <div className="hero-content text-center">
           <div className="max-w-3xl">
             <h1 className="text-5xl font-bold text-primary">Decentralized Voting System</h1>
-            <p className="py-6 text-xl">Welcome to the Decentralized Voting System on Polygon Mumbai!</p>
+            <p className="py-6 text-xl">Welcome to the Decentralized Voting System on Base!</p>
             <p className="pb-8 text-lg opacity-80">Secure. Transparent. Immutable.</p>
 
             {/* Wallet Connection Button */}
@@ -56,7 +56,7 @@ export default function HomePage() {
                 </svg>
               </div>
               <h3 className="card-title text-xl">Secure Blockchain Voting</h3>
-              <p className="py-2">Your vote is securely recorded on the Polygon Mumbai blockchain, ensuring immutability
+              <p className="py-2">Your vote is securely recorded on the Base blockchain, ensuring immutability
                 and transparency.</p>
             </div>
           </div>
@@ -136,16 +136,16 @@ export default function HomePage() {
                   d="M7.864 4.243A7.5 7.5 0 0 1 19.5 10.5c0 2.92-.556 5.709-1.568 8.268M5.742 6.364A7.465 7.465 0 0 0 4.5 10.5a7.464 7.464 0 0 0 1.242 4.136m6.758 1.364a7.5 7.5 0 1 1-7.5-7.5 7.5 7.5 0 0 1 7.5 7.5Z" />
           </svg>
           <p className="font-bold">
-            Decentralized Voting System <br />Built on Polygon Mumbai
+            Decentralized Voting System <br />Built on Base
           </p>
           <p>© 2025 - Running on the Blockchain</p>
         </div>
         <div>
           <div className="grid grid-flow-col gap-4">
-            <a className="link link-hover" href="https://polygon.technology/" target="_blank"
-               rel="noopener noreferrer">Polygon</a>
-            <a className="link link-hover" href="https://mumbai.polygonscan.com/" target="_blank"
-               rel="noopener noreferrer">Mumbai Explorer</a>
+            <a className="link link-hover" href="https://www.base.org/" target="_blank"
+               rel="noopener noreferrer">Base</a>
+            <a className="link link-hover" href="https://basescan.org/" target="_blank"
+               rel="noopener noreferrer">Explorer</a>
             <a className="link link-hover" href="https://metamask.io/" target="_blank"
                rel="noopener noreferrer">MetaMask</a>
           </div>
