@@ -1,11 +1,11 @@
 {
+  "type": "module",
   "scripts": {
-    "dev": "../node_modules/.bin/vite dev",
-    "build": "../node_modules/.bin/vite build",
-    "lint": "../node_modules/.bin/eslint . --max-warnings 0"
+    "dev": "vite dev",
+    "build": "vite build",
+    "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
-    "cropperjs": "^1.6.2",
     "cross-env": "^7.0.3",
     "lucide-react": "^0.468.0",
     "node-fetch": "^3.3.2",
