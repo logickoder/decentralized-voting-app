@@ -1,17 +1,12 @@
 import { useState } from 'react';
-
-// Mocked data - to be replaced with actual data later
-const mockCandidates = [
-  { id: 1, name: 'Candidate 1' },
-  { id: 2, name: 'Candidate 2' },
-  { id: 3, name: 'Candidate 3' }
-];
-
-const mockVotingStatus = 'Voting In Progress'; // "Voting Not Started", "Voting In Progress", "Voting Ended"
-const mockIsWalletConnected = true; // Set to false to simulate disconnected wallet
+import { getVoteStateText, VoteStatus } from '../types/VoteStatus.ts';
+import useAppStore from '../domain/store.ts';
 
 export default function VotingPage() {
   const [selectedCandidate, setSelectedCandidate] = useState<number | null>(null);
+  const status = useAppStore(state => state.voteStatus);
+  const candidates = useAppStore(state => state.candidates);
+  const isConnected = useAppStore(state => state.isConnected());
   const [votingStatus, setVotingStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
@@ -34,7 +29,7 @@ export default function VotingPage() {
     }, 2000);
   };
 
-  const isVotingEnabled = mockIsWalletConnected && mockVotingStatus === 'Voting In Progress' && !hasVoted;
+  const isVotingEnabled = isConnected && status == VoteStatus.Active && !hasVoted;
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -47,7 +42,7 @@ export default function VotingPage() {
 
             {/* Voting Status Badge */}
             <div className="badge badge-lg p-3 mt-2 mb-4 font-medium">
-              Status: {mockVotingStatus}
+              Status: {getVoteStateText(status)}
             </div>
           </div>
         </div>
@@ -55,7 +50,7 @@ export default function VotingPage() {
 
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         {/* Wallet Connection Warning */}
-        {!mockIsWalletConnected && (
+        {!isConnected && (
           <div className="alert alert-warning shadow-lg mb-8">
             <div>
               <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none"
@@ -69,7 +64,7 @@ export default function VotingPage() {
         )}
 
         {/* Voting Disabled Alert */}
-        {mockIsWalletConnected && mockVotingStatus !== 'Voting In Progress' && (
+        {isConnected && status !== VoteStatus.Active && (
           <div className="alert alert-info shadow-lg mb-8">
             <div>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -77,7 +72,7 @@ export default function VotingPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                       d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span>{mockVotingStatus === 'Voting Not Started' ? 'Voting has not started yet' : 'Voting has ended'}</span>
+              <span>{status === VoteStatus.Pending ? 'Voting has not started yet' : 'Voting has ended'}</span>
             </div>
           </div>
         )}
@@ -130,7 +125,7 @@ export default function VotingPage() {
             <h2 className="card-title text-2xl mb-6">Select a Candidate</h2>
 
             <div className="space-y-4 mb-8">
-              {mockCandidates.map((candidate) => (
+              {candidates.map((candidate) => (
                 <div
                   key={candidate.id}
                   className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${

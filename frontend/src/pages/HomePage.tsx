@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
-
-// Mock data - replace with actual state management later
-const mockElectionStatus = 'Voting Not Started'; // or "Voting In Progress" or "Voting Ended"
+import walletUsecase from '../domain/walletUsecase.ts';
+import useAppStore from '../domain/store.ts';
+import { getVoteStateText, VoteStatus } from '../types/VoteStatus.ts';
 
 export default function HomePage() {
+  const isConnected = useAppStore(state => state.isConnected());
+  const status = useAppStore(state => state.voteStatus);
+
   return (
     <div className="min-h-screen bg-base-200">
       {/* Hero Section */}
@@ -15,25 +18,28 @@ export default function HomePage() {
             <p className="pb-8 text-lg opacity-80">Secure. Transparent. Immutable.</p>
 
             {/* Wallet Connection Button */}
-            <button className="btn btn-primary btn-lg shadow-button gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
-                   stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M21 12a2.25 2.25 0 0 0-2.25-2.25H9a2.25 2.25 0 0 1-2.25-2.25V7.5a2.25 2.25 0 0 1 2.25-2.25h10.5A2.25 2.25 0 0 1 21.75 9v.75m0 0A2.25 2.25 0 0 1 24 12v.75m0 0A2.25 2.25 0 0 1 21.75 15v.75A2.25 2.25 0 0 1 19.5 18h-10.5A2.25 2.25 0 0 1 6.75 15v-3.75M21 12a2.25 2.25 0 0 0-2.25-2.25H9a2.25 2.25 0 0 1-2.25-2.25V7.5a2.25 2.25 0 0 1 2.25-2.25h10.5A2.25 2.25 0 0 1 21.75 9v.75" />
-              </svg>
-              Connect with MetaMask
-            </button>
-
+            {
+              !isConnected && (
+                <button className="btn btn-primary btn-lg shadow-button gap-2 mb-8" onClick={walletUsecase.connect}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
+                       stroke="currentColor" className="w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round"
+                          d="M21 12a2.25 2.25 0 0 0-2.25-2.25H9a2.25 2.25 0 0 1-2.25-2.25V7.5a2.25 2.25 0 0 1 2.25-2.25h10.5A2.25 2.25 0 0 1 21.75 9v.75m0 0A2.25 2.25 0 0 1 24 12v.75m0 0A2.25 2.25 0 0 1 21.75 15v.75A2.25 2.25 0 0 1 19.5 18h-10.5A2.25 2.25 0 0 1 6.75 15v-3.75M21 12a2.25 2.25 0 0 0-2.25-2.25H9a2.25 2.25 0 0 1-2.25-2.25V7.5a2.25 2.25 0 0 1 2.25-2.25h10.5A2.25 2.25 0 0 1 21.75 9v.75" />
+                  </svg>
+                  Connect with MetaMask
+                </button>
+              )
+            }
             {/* Election Status Badge */}
-            <div className="mt-8">
+            <div>
               <div className={`badge badge-lg p-4 ${
-                mockElectionStatus === 'Voting In Progress'
+                status === VoteStatus.Active
                   ? 'badge-secondary'
-                  : mockElectionStatus === 'Voting Ended'
+                  : status === VoteStatus.Ended
                     ? 'badge-accent'
                     : 'badge-neutral'
               }`}>
-                <span className="text-lg font-medium">Status: {mockElectionStatus}</span>
+                <span className="text-lg font-medium">Status: {getVoteStateText(status)}</span>
               </div>
             </div>
           </div>

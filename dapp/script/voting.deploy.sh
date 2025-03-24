@@ -1,0 +1,1 @@
+forge script Voting.s.sol:VotingScript --rpc-url http://localhost:8545 --broadcast

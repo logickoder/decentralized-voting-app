@@ -1,27 +1,40 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-
-// Mock data - replace with actual state management later
-const mockUserRole = 'Election Manager'; // or "Auditor" or null
-const mockElectionStatus = 'Not Started'; // or "In Progress" or "Ended"
-const mockResultStatus = 'Not Announced'; // or "Announced"
+import useAppStore from '../domain/store.ts';
+import walletUsecase from '../domain/walletUsecase.ts';
+import { getVoteStateText, VoteStatus } from '../types/VoteStatus.ts';
+import { getResultStatusStateText, ResultStatusState } from '../types/ResultStatus.ts';
+import votingUsecase from '../domain/votingUsecase.ts';
+import { CiCircleInfo, CiPlay1, CiStop1 } from 'react-icons/ci';
+import { HiOutlineClipboardDocumentCheck, HiOutlineTrophy } from 'react-icons/hi2';
+import { GrPowerReset } from 'react-icons/gr';
+import { IS_AUDITOR, IS_ELECTION_MANAGER } from '../types/Role.ts';
 
 export default function AdminDashboard() {
   const [winnerName, setWinnerName] = useState('');
   const [managerFeedback, setManagerFeedback] = useState('');
   const [auditorFeedback, setAuditorFeedback] = useState('');
-  const [isWalletConnected, setIsWalletConnected] = useState(true); // Mock wallet connection status
+  const isConnected = useAppStore(state => state.isConnected());
+  const voteStatus = useAppStore(state => state.voteStatus);
+  const resultStatus = useAppStore(state => state.resultStatus);
+  const role = useAppStore(state => state.role);
 
   // Mock functions - replace with actual contract calls
-  const handleStartVoting = () => {
-    // Call startVoting() contract function
+  const handleStartVoting = async () => {
+    await votingUsecase.startVoting();
     setManagerFeedback('Voting started successfully!');
     setTimeout(() => setManagerFeedback(''), 3000);
   };
 
-  const handleEndVoting = () => {
-    // Call endVoting() contract function
+  const handleEndVoting = async () => {
+    await votingUsecase.endVoting();
     setManagerFeedback('Voting ended successfully!');
+    setTimeout(() => setManagerFeedback(''), 3000);
+  };
+
+  const handleReset = async () => {
+    await votingUsecase.reset();
+    setManagerFeedback('Voting reset successfully!');
     setTimeout(() => setManagerFeedback(''), 3000);
   };
 
@@ -38,7 +51,7 @@ export default function AdminDashboard() {
   };
 
   // If wallet is not connected
-  if (!isWalletConnected) {
+  if (!isConnected) {
     return (
       <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
         <div className="card w-full max-w-md bg-base-100 shadow-card">
@@ -52,7 +65,7 @@ export default function AdminDashboard() {
               </svg>
               <span>Please connect your wallet to access admin features</span>
             </div>
-            <button className="btn btn-primary w-full">
+            <button className="btn btn-primary w-full" onClick={walletUsecase.connect}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
                    stroke="currentColor" className="w-6 h-6 mr-2">
                 <path strokeLinecap="round" strokeLinejoin="round"
@@ -68,7 +81,7 @@ export default function AdminDashboard() {
   }
 
   // If user is not an admin
-  if (mockUserRole !== 'Election Manager' && mockUserRole !== 'Auditor') {
+  if (role === 0) {
     return (
       <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
         <div className="card w-full max-w-md bg-base-100 shadow-card">
@@ -96,7 +109,9 @@ export default function AdminDashboard() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-primary">Admin Dashboard</h1>
           <div className="badge badge-lg badge-secondary mt-4 p-3">
-            <span className="text-lg">Role: {mockUserRole}</span>
+            <span className="text-lg">
+              Role: {role === 3 ? 'Super Admin' : role && IS_ELECTION_MANAGER !== 0 ? 'Election Manager' : role && IS_AUDITOR !== 0 ? 'Auditor' : ''}
+            </span>
           </div>
         </div>
 
@@ -105,7 +120,7 @@ export default function AdminDashboard() {
           <div className="stats shadow">
             <div className="stat">
               <div className="stat-title">Election Status</div>
-              <div className="stat-value text-primary">{mockElectionStatus}</div>
+              <div className="stat-value text-primary">{getVoteStateText(voteStatus, false)}</div>
               <div className="stat-desc">Updated in real-time</div>
             </div>
           </div>
@@ -113,7 +128,7 @@ export default function AdminDashboard() {
           <div className="stats shadow">
             <div className="stat">
               <div className="stat-title">Result Status</div>
-              <div className="stat-value text-secondary">{mockResultStatus}</div>
+              <div className="stat-value text-secondary">{getResultStatusStateText(resultStatus.state)}</div>
               <div className="stat-desc">Updated in real-time</div>
             </div>
           </div>
@@ -122,45 +137,43 @@ export default function AdminDashboard() {
         {/* Admin Controls */}
         <div className="grid grid-cols-1 gap-8">
           {/* Election Manager Section */}
-          {mockUserRole === 'Election Manager' && (
+          {role & IS_ELECTION_MANAGER !== 0 && (
             <div className="card bg-base-100 shadow-card">
               <div className="card-body">
                 <h2 className="card-title text-2xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
-                       stroke="currentColor" className="w-6 h-6 text-primary">
-                    <path strokeLinecap="round" strokeLinejoin="round"
-                          d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3l1.5 1.5 3-3.75" />
-                  </svg>
+                  <HiOutlineClipboardDocumentCheck className="w-6 h-6 text-primary" />
                   Election Manager Controls
                 </h2>
 
                 <div className="divider"></div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <button
                     className="btn btn-primary btn-lg"
                     onClick={handleStartVoting}
-                    disabled={mockElectionStatus === 'In Progress' || mockElectionStatus === 'Ended'}
+                    disabled={voteStatus === VoteStatus.Active || voteStatus === VoteStatus.Ended}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
-                         stroke="currentColor" className="w-6 h-6 mr-2">
-                      <path strokeLinecap="round" strokeLinejoin="round"
-                            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
-                    </svg>
+                    <CiPlay1 />
                     Start Voting
                   </button>
 
                   <button
                     className="btn btn-error btn-lg"
                     onClick={handleEndVoting}
-                    disabled={mockElectionStatus !== 'In Progress'}
+                    disabled={voteStatus !== VoteStatus.Active}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
-                         stroke="currentColor" className="w-6 h-6 mr-2">
-                      <path strokeLinecap="round" strokeLinejoin="round"
-                            d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z" />
-                    </svg>
+                    <CiStop1 />
                     End Voting
+                  </button>
+
+
+                  <button
+                    className="btn btn-error btn-lg"
+                    onClick={handleReset}
+                    disabled={voteStatus !== VoteStatus.Ended}
+                  >
+                    <GrPowerReset />
+                    Reset
                   </button>
                 </div>
 
@@ -183,15 +196,11 @@ export default function AdminDashboard() {
           )}
 
           {/* Auditor Section */}
-          {mockUserRole === 'Auditor' && (
+          {role & IS_AUDITOR !== 0 && (
             <div className="card bg-base-100 shadow-card">
               <div className="card-body">
                 <h2 className="card-title text-2xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
-                       stroke="currentColor" className="w-6 h-6 text-secondary">
-                    <path strokeLinecap="round" strokeLinejoin="round"
-                          d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
-                  </svg>
+                  <HiOutlineTrophy className="w-6 h-6 text-secondary" />
                   Auditor Controls
                 </h2>
 
@@ -207,14 +216,14 @@ export default function AdminDashboard() {
                     className="input input-bordered w-full"
                     value={winnerName}
                     onChange={(e) => setWinnerName(e.target.value)}
-                    disabled={mockElectionStatus !== 'Ended' || mockResultStatus === 'Announced'}
+                    disabled={voteStatus !== VoteStatus.Ended || resultStatus.state === ResultStatusState.Announced}
                   />
                 </div>
 
                 <button
                   className="btn btn-secondary btn-lg mt-4"
                   onClick={handleAnnounceResult}
-                  disabled={mockElectionStatus !== 'Ended' || mockResultStatus === 'Announced'}
+                  disabled={voteStatus !== VoteStatus.Ended || resultStatus.state === ResultStatusState.Announced}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
                        stroke="currentColor" className="w-6 h-6 mr-2">
@@ -236,11 +245,7 @@ export default function AdminDashboard() {
                 )}
 
                 <div className="alert alert-info mt-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
-                       stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round"
-                          d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                  </svg>
+                  <CiCircleInfo />
                   <span>The announce result function can only be called once and after voting has ended.</span>
                 </div>
 
