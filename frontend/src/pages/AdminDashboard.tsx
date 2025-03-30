@@ -11,13 +11,14 @@ import { GrPowerReset } from 'react-icons/gr';
 import { IS_AUDITOR, IS_ELECTION_MANAGER } from '../types/Role.ts';
 
 export default function AdminDashboard() {
-  const [winnerName, setWinnerName] = useState('');
+  const [winnerId, setWinnerId] = useState<number | null>(null);
   const [managerFeedback, setManagerFeedback] = useState('');
   const [auditorFeedback, setAuditorFeedback] = useState('');
   const isConnected = useAppStore(state => state.isConnected());
   const voteStatus = useAppStore(state => state.voteStatus);
   const resultStatus = useAppStore(state => state.resultStatus);
   const role = useAppStore(state => state.role);
+  const candidates = useAppStore(state => state.candidates);
 
   // Mock functions - replace with actual contract calls
   const handleStartVoting = async () => {
@@ -38,16 +39,17 @@ export default function AdminDashboard() {
     setTimeout(() => setManagerFeedback(''), 3000);
   };
 
-  const handleAnnounceResult = () => {
-    if (!winnerName.trim()) {
-      setAuditorFeedback('Please enter the winner name');
+  const handleAnnounceResult = async () => {
+    const candidate = candidates.find((candidate) => candidate.id === winnerId);
+    if (!candidate) {
+      setAuditorFeedback('Please select the winner');
       setTimeout(() => setAuditorFeedback(''), 3000);
       return;
     }
-    // Call announceResult() contract function
-    setAuditorFeedback(`Result announced: ${winnerName} is the winner!`);
+    await votingUsecase.announceWinner(candidate.id);
+    setAuditorFeedback(`Result announced: ${candidate.name} is the winner!`);
     setTimeout(() => setAuditorFeedback(''), 3000);
-    setWinnerName('');
+    setWinnerId(null);
   };
 
   // If wallet is not connected
@@ -210,14 +212,17 @@ export default function AdminDashboard() {
                   <label className="label">
                     <span className="label-text text-lg">Winner Name</span>
                   </label>
-                  <input
-                    type="text"
-                    placeholder="Enter the winning candidate's name"
-                    className="input input-bordered w-full"
-                    value={winnerName}
-                    onChange={(e) => setWinnerName(e.target.value)}
+                  <select
+                    className="select select-bordered w-full"
+                    value={winnerId ?? ''}
+                    onChange={(e) => setWinnerId(Number(e.target.value))}
                     disabled={voteStatus !== VoteStatus.Ended || resultStatus.state === ResultStatusState.Announced}
-                  />
+                  >
+                    <option disabled={true} value="">Select the winning candidate</option>
+                    {candidates.map((candidate) => (
+                      <option value={candidate.id}>{candidate.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <button

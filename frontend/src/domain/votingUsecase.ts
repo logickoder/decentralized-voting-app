@@ -8,6 +8,7 @@ interface VotingUsecase {
   getRole: () => Promise<void>;
   startVoting: () => Promise<void>;
   endVoting: () => Promise<void>;
+  announceWinner: (id: number) => Promise<void>;
   reset: () => Promise<void>;
 }
 
@@ -20,10 +21,8 @@ const votingUsecase: VotingUsecase = {
       }
 
       const store = await useAppStore.getState();
-      // get initial state
       // @ts-ignore
       await contract.getVoteStatus().then(store.setVoteStatus);
-
       await contract.on('VoteStatusChanged', store.setVoteStatus);
     } catch (error) {
       console.error('Error getting vote status:', error);
@@ -38,11 +37,20 @@ const votingUsecase: VotingUsecase = {
       }
 
       const store = await useAppStore.getState();
-      // get initial state
-      // @ts-ignore
-      await contract.getResultStatus().then(store.setResultStatus);
 
-      await contract.on('ResultStatusChanged', store.setResultStatus);
+      const updateState = (data: object) => {
+        const winner = Number(data[1]);
+        store.setResultStatus(
+          {
+            state: Number(data[0]),
+            winner: winner == 0 ? undefined : winner
+          }
+        );
+      };
+
+      // @ts-ignore
+      await contract.getResultStatus().then(updateState);
+      await contract.on('ResultStatusChanged', updateState);
     } catch (error) {
       console.error('Error getting result status:', error);
       toast(error.message ?? 'Error getting result status', { type: 'error' });
@@ -56,7 +64,6 @@ const votingUsecase: VotingUsecase = {
       }
 
       const store = await useAppStore.getState();
-      // get initial state
       // @ts-ignore
       await contract.getRole(store.wallet).then(store.setRole);
     } catch (error) {
@@ -90,6 +97,20 @@ const votingUsecase: VotingUsecase = {
     } catch (error) {
       console.error('Error ending voting:', error);
       toast(error.message ?? 'Error ending voting', { type: 'error' });
+    }
+  },
+  announceWinner: async (id) => {
+    try {
+      const contract = await walletUsecase.getContract(true);
+      if (!contract) {
+        return;
+      }
+
+      // @ts-ignore
+      await contract.announceResult(id);
+    } catch (error) {
+      console.error('Error announcing result:', error);
+      toast(error.message ?? 'Error announcing result', { type: 'error' });
     }
   },
   reset: async () => {

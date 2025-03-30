@@ -5,7 +5,7 @@ export enum ResultStatusState {
 
 export type ResultStatus = {
   state: ResultStatusState;
-  winner?: string;
+  winner?: number;
 }
 
 export function getResultStatusStateText(status: ResultStatusState) {

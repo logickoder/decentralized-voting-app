@@ -42,17 +42,8 @@ const useAppStore = create<AppStore>(
         connectWallet: (wallet) => set({ wallet }),
         isConnected: () => get().wallet !== null,
         setRole: (role) => set({ role: Number(role) }),
-        setVoteStatus: (status) => {
-          set({ voteStatus: Number(status) });
-        },
-        setResultStatus: (status) => {
-          set({
-            resultStatus: {
-              state: Number(status),
-              winner: Number(status[1]) == 0 ? undefined : String(status[1])
-            }
-          });
-        },
+        setVoteStatus: (status) => set({ voteStatus: Number(status) }),
+        setResultStatus: (resultStatus) => set({ resultStatus }),
         setCandidates: (candidates) => set({ candidates }),
         clear: () => set(initialState)
       }),
