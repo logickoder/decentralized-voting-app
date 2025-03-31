@@ -7,8 +7,11 @@ interface VotingUsecase {
   getResultStatus: () => Promise<void>;
   getRole: () => Promise<void>;
   startVoting: () => Promise<void>;
+  vote: (candidateId: number) => Promise<boolean>;
   endVoting: () => Promise<void>;
+  hasVoted: () => Promise<void>;
   announceWinner: (id: number) => Promise<void>;
+  getResultStatistics: () => Promise<void>;
   reset: () => Promise<void>;
 }
 
@@ -85,6 +88,23 @@ const votingUsecase: VotingUsecase = {
       toast(error.message ?? 'Error starting voting', { type: 'error' });
     }
   },
+  vote: async (candidateId) => {
+    try {
+      const contract = await walletUsecase.getContract(true);
+      if (!contract) {
+        return;
+      }
+
+      // @ts-ignore
+      await contract.vote(candidateId);
+      await votingUsecase.hasVoted();
+      return true;
+    } catch (error) {
+      console.error('Error voting:', error);
+      toast(error.message ?? 'Error voting', { type: 'error' });
+      return false;
+    }
+  },
   endVoting: async () => {
     try {
       const contract = await walletUsecase.getContract(true);
@@ -94,6 +114,21 @@ const votingUsecase: VotingUsecase = {
 
       // @ts-ignore
       await contract.endVoting();
+    } catch (error) {
+      console.error('Error ending voting:', error);
+      toast(error.message ?? 'Error ending voting', { type: 'error' });
+    }
+  },
+  hasVoted: async () => {
+    try {
+      const contract = await walletUsecase.getContract();
+      const store = useAppStore.getState();
+      if (!contract || !store.wallet) {
+        return;
+      }
+
+      // @ts-ignore
+      contract.hasAddressVoted(store.wallet).then(store.setHasVoted);
     } catch (error) {
       console.error('Error ending voting:', error);
       toast(error.message ?? 'Error ending voting', { type: 'error' });
@@ -113,6 +148,39 @@ const votingUsecase: VotingUsecase = {
       toast(error.message ?? 'Error announcing result', { type: 'error' });
     }
   },
+  getResultStatistics: async () => {
+    try {
+      const contract = await walletUsecase.getContract();
+      if (!contract) {
+        return;
+      }
+
+      const store = await useAppStore.getState();
+      // @ts-ignore
+      const response = await contract.getResultStatistics();
+
+      const candidateIds = response[3] as object;
+      const voteCounts = response[4] as object;
+
+      const leadingCandidate = Number(response[1]);
+
+      const candidates = new Map<number, number>();
+      for (let i = 0; i < candidateIds.length; ++i) {
+        candidates[candidateIds[i]] = Number(voteCounts[i]);
+      }
+
+      store.setStatistics({
+        totalVotes: Number(response[0]),
+        leadingCandidate: leadingCandidate === 0 ? undefined : leadingCandidate,
+        voterTurnout: Number(response[2]),
+        lastUpdated: new Date(),
+        candidates
+      });
+    } catch (error) {
+      console.error('Error announcing result:', error);
+      toast(error.message ?? 'Error announcing result', { type: 'error' });
+    }
+  },
   reset: async () => {
     try {
       const contract = await walletUsecase.getContract(true);
@@ -127,7 +195,6 @@ const votingUsecase: VotingUsecase = {
       toast(error.message ?? 'Error resetting voting', { type: 'error' });
     }
   }
-
 };
 
 export default votingUsecase;

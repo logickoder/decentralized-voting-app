@@ -220,7 +220,7 @@ export default function AdminDashboard() {
                   >
                     <option disabled={true} value="">Select the winning candidate</option>
                     {candidates.map((candidate) => (
-                      <option value={candidate.id}>{candidate.name}</option>
+                      <option key={candidate.id} value={candidate.id}>{candidate.name}</option>
                     ))}
                   </select>
                 </div>

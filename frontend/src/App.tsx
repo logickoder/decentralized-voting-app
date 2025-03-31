@@ -15,6 +15,7 @@ export default function App() {
       void votingUsecase.getVoteStatus();
       void votingUsecase.getResultStatus();
       void votingUsecase.getRole();
+      void votingUsecase.hasVoted();
       void candidatesUsecase.getCandidates();
     }
   }, [wallet]);

@@ -1,32 +1,32 @@
 import { useState } from 'react';
 import { getVoteStateText, VoteStatus } from '../types/VoteStatus.ts';
 import useAppStore from '../domain/store.ts';
+import votingUsecase from '../domain/votingUsecase.ts';
 
 export default function VotingPage() {
   const [selectedCandidate, setSelectedCandidate] = useState<number | null>(null);
   const status = useAppStore(state => state.voteStatus);
   const candidates = useAppStore(state => state.candidates);
   const isConnected = useAppStore(state => state.isConnected());
+  const hasVoted = useAppStore(state => state.hasVoted);
   const [votingStatus, setVotingStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
   const [rewardEarned, setRewardEarned] = useState(false);
 
-  const handleVote = () => {
+  const handleVote = async () => {
     if (!selectedCandidate) {
       setVotingStatus('Please select a candidate');
       return;
     }
 
     setIsLoading(true);
+    const result = await votingUsecase.vote(selectedCandidate);
 
-    // Simulate blockchain transaction
-    setTimeout(() => {
-      setIsLoading(false);
-      setHasVoted(true);
+    setIsLoading(false);
+    if (result) {
       setVotingStatus('Vote recorded successfully!');
       setRewardEarned(true);
-    }, 2000);
+    }
   };
 
   const isVotingEnabled = isConnected && status == VoteStatus.Active && !hasVoted;

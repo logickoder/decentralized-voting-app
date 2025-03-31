@@ -1,79 +1,62 @@
-import { useEffect, useState } from 'react';
-
-// Mock data - replace with actual blockchain data later
-const mockCandidates = [
-  { id: 1, name: 'Candidate 1', votes: 35 },
-  { id: 2, name: 'Candidate 2', votes: 42 },
-  { id: 3, name: 'Candidate 3', votes: 23 }
-];
-
-const mockTotalVotes = 100; // Total votes cast
-const mockTotalVoters = 1000; // Total eligible voters
-const mockWinner = null; // null if not announced, or candidate object if announced
-const mockVotingStatus = 'Voting In Progress'; // "Voting Not Started", "Voting In Progress", "Voting Ended"
+import { useEffect, useMemo, useState } from 'react';
+import votingUsecase from '../domain/votingUsecase.ts';
+import useAppStore from '../domain/store.ts';
+import { getVoteStateText, VoteStatus } from '../types/VoteStatus.ts';
 
 export default function ResultsPage() {
-  const [candidates, setCandidates] = useState(mockCandidates);
-  const [totalVotes, setTotalVotes] = useState(mockTotalVotes);
-  const [totalVoters, setTotalVoters] = useState(mockTotalVoters);
-  const [winner, setWinner] = useState(mockWinner);
-  const [votingStatus, setVotingStatus] = useState(mockVotingStatus);
+  const statistics = useAppStore((state) => state.statistics);
+  const status = useAppStore((state) => state.resultStatus);
+  const votingStatus = useAppStore((state) => state.voteStatus);
+  const candidates = useAppStore((state) => state.candidates);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState(new Date());
 
-  // Function to calculate turnout percentage
-  const getTurnoutPercentage = () => {
-    return ((totalVotes / totalVoters) * 100).toFixed(1);
-  };
+  const leadingCandidate = useMemo(() => {
+    if (!statistics.leadingCandidate) {
+      return undefined;
+    }
+    return candidates.find((candidate) => candidate.id == statistics.leadingCandidate);
+  }, [candidates, statistics.leadingCandidate]);
 
-  // Function to get the candidate with most votes
-  const getLeadingCandidate = () => {
-    return [...candidates].sort((a, b) => b.votes - a.votes)[0];
-  };
+  const winner = useMemo(() => {
+    if (votingStatus !== VoteStatus.Ended || !candidates || !status) {
+      return undefined;
+    }
+
+    return candidates.find((candidate) => candidate.id == status.winner);
+  }, [candidates, status, votingStatus]);
+
+  const lastUpdated = useMemo(() => {
+    if (!statistics.lastUpdated) {
+      return '';
+    }
+    if (typeof statistics.lastUpdated === 'string') {
+      return new Date(statistics.lastUpdated).toLocaleTimeString();
+    } else {
+      return statistics.lastUpdated.toLocaleTimeString();
+    }
+  }, [statistics.lastUpdated]);
+
 
   // Function to refresh data
-  const refreshData = () => {
+  const refreshData = async () => {
     setIsRefreshing(true);
-
-    // Simulate fetching data from blockchain
-    setTimeout(() => {
-      // In a real implementation, you would fetch the latest data from the blockchain here
-      // For now, we'll just update the mock data slightly
-      const updatedCandidates = candidates.map(candidate => ({
-        ...candidate,
-        votes: candidate.votes + Math.floor(Math.random() * 3) // Add 0-2 votes randomly
-      }));
-
-      const newTotalVotes = updatedCandidates.reduce((sum, candidate) => sum + candidate.votes, 0);
-
-      setCandidates(updatedCandidates);
-      setTotalVotes(newTotalVotes);
-      setLastUpdated(new Date());
-      setIsRefreshing(false);
-
-      // Simulate result announcement if voting has ended
-      if (votingStatus === 'Voting Ended' && !winner) {
-        const leadingCandidate = updatedCandidates.sort((a, b) => b.votes - a.votes)[0];
-        if (Math.random() > 0.7) { // 30% chance of result being announced
-          setWinner(leadingCandidate);
-        }
-      }
-    }, 1500);
+    await votingUsecase.getResultStatistics();
+    setIsRefreshing(false);
   };
 
   // Auto-refresh every 30 seconds if voting is in progress
   useEffect(() => {
     let interval;
-    if (votingStatus === 'Voting In Progress') {
+    if (votingStatus === VoteStatus.Active) {
       interval = setInterval(() => {
-        refreshData();
+        void refreshData();
       }, 30000);
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [votingStatus, candidates]);
+  }, [votingStatus]);
 
   return (
     <div className="min-h-screen bg-base-200">
@@ -86,13 +69,13 @@ export default function ResultsPage() {
 
             {/* Voting Status Badge */}
             <div className={`badge badge-lg p-3 mt-2 mb-4 font-medium ${
-              votingStatus === 'Voting In Progress'
+              votingStatus === VoteStatus.Active
                 ? 'badge-secondary'
-                : votingStatus === 'Voting Ended'
+                : votingStatus === VoteStatus.Ended
                   ? 'badge-accent'
                   : 'badge-neutral'
             }`}>
-              Status: {votingStatus}
+              Status: {getVoteStateText(votingStatus)}
             </div>
           </div>
         </div>
@@ -110,7 +93,8 @@ export default function ResultsPage() {
               </svg>
               <div className="ml-4">
                 <h3 className="text-xl font-bold">Winner Announced!</h3>
-                <p className="text-2xl font-bold mt-2">{winner.name} has won with {winner.votes} votes!</p>
+                <p className="text-2xl font-bold mt-2">{winner.name} has won
+                  with {statistics.candidates[winner.id]} votes!</p>
               </div>
             </div>
           </div>
@@ -129,8 +113,8 @@ export default function ResultsPage() {
                   <div className="stats shadow">
                     <div className="stat">
                       <div className="stat-title">Total Votes</div>
-                      <div className="stat-value text-primary">{totalVotes}</div>
-                      <div className="stat-desc">Out of {totalVoters} eligible voters</div>
+                      <div className="stat-value text-primary">{statistics.totalVotes}</div>
+                      <div className="stat-desc">Out of 1000 eligible voters</div>
                     </div>
                   </div>
 
@@ -138,7 +122,7 @@ export default function ResultsPage() {
                   <div className="stats shadow">
                     <div className="stat">
                       <div className="stat-title">Voter Turnout</div>
-                      <div className="stat-value text-secondary">{getTurnoutPercentage()}%</div>
+                      <div className="stat-value text-secondary">{statistics.voterTurnout}%</div>
                       <div className="stat-desc">Based on eligible voter pool</div>
                     </div>
                   </div>
@@ -147,8 +131,8 @@ export default function ResultsPage() {
                   <div className="stats shadow">
                     <div className="stat">
                       <div className="stat-title">Currently Leading</div>
-                      <div className="stat-value text-accent">{getLeadingCandidate().name}</div>
-                      <div className="stat-desc">With {getLeadingCandidate().votes} votes</div>
+                      <div className="stat-value text-accent">{leadingCandidate?.name}</div>
+                      <div className="stat-desc">With {statistics.candidates[leadingCandidate?.id]} votes</div>
                     </div>
                   </div>
                 </div>
@@ -169,7 +153,7 @@ export default function ResultsPage() {
                     )}
                     Refresh Data
                   </button>
-                  <p className="text-sm opacity-70 mt-2">Last updated: {lastUpdated.toLocaleTimeString()}</p>
+                  <p className="text-sm opacity-70 mt-2">Last updated: {lastUpdated}</p>
                 </div>
               </div>
             </div>
@@ -184,13 +168,14 @@ export default function ResultsPage() {
                 {/* Progress Bars */}
                 <div className="space-y-6">
                   {candidates.map(candidate => {
-                    const percentage = totalVotes > 0 ? (candidate.votes / totalVotes * 100).toFixed(1) : 0;
+                    const percentage = statistics.totalVotes > 0 ? (statistics.candidates[candidate.id] / statistics.totalVotes * 100).toFixed(1) : 0;
 
                     return (
                       <div key={candidate.id} className="mb-4">
                         <div className="flex justify-between mb-1">
                           <span className="text-lg font-medium">{candidate.name}</span>
-                          <span className="text-lg font-medium">{candidate.votes} votes ({percentage}%)</span>
+                          <span
+                            className="text-lg font-medium">{statistics.candidates[candidate.id]} votes ({percentage}%)</span>
                         </div>
                         <div className="w-full bg-neutral rounded-full h-6">
                           <div
@@ -208,7 +193,7 @@ export default function ResultsPage() {
                 </div>
 
                 {/* Auto-refresh notice */}
-                {votingStatus === 'Voting In Progress' && (
+                {votingStatus === VoteStatus.Active && (
                   <div className="mt-8 text-center opacity-70">
                     <p>Data automatically refreshes every 30 seconds during active voting</p>
                   </div>
