@@ -221,6 +221,7 @@ Now, deploy it to Anvil:
 
 ```bash
 cd script
+chmod +x voting.deploy.sh
 ./voting.deploy.sh
 ```
 
@@ -306,17 +307,7 @@ PORT=4000
 
 Save and exit. Skip this if you’re fine with the default port.
 
-### 5. Create the Database
-
-The backend uses SQLite, and Prisma sets it up:
-
-```bash
-pnpm gen:schema
-```
-
-This creates the database tables. If it runs without errors, it worked.
-
-### 6. Start the Backend
+### 5. Start the Backend
 
 ```bash
 pnpm dev
@@ -330,7 +321,7 @@ Server running at http://localhost:4000
 
 **Action**: Note this URL (it might use a different port if you set one). This is where the backend lives.
 
-### 7. Update Frontend Environment
+### 6. Update Frontend Environment
 
 Back in the `frontend` folder (open it in another terminal if needed):
 
