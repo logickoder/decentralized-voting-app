@@ -66,8 +66,8 @@ const candidatesUsecase: CandidatesUsecase = {
   },
   updateCandidate: async (candidate) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/candidates/${candidate.id}`, {
-        method: 'PATCH',
+      await fetch(`${import.meta.env.VITE_API_URL}/candidates`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...candidate })
       });

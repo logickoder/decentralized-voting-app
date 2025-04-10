@@ -333,16 +333,16 @@ nano .env
 Add the backend URL to your `.env` file:
 
 ```env
-VITE_BACKEND_URL=your_backend_base_url
+VITE_API_URL=your_backend_base_url
 ```
 
 **Example**:
 
 ```env
-VITE_BACKEND_URL=http://localhost:4000
+VITE_API_URL=http://localhost:4000/api
 ```
 
-Save and exit. Your `.env` should now have both `VITE_CONTRACT_ADDRESS` and `VITE_BACKEND_URL`.
+Save and exit. Your `.env` should now have both `VITE_CONTRACT_ADDRESS` and `VITE_API_URL`.
 
 ---
 
@@ -452,7 +452,7 @@ In your browser (with MetaMask on “Anvil Local” and the right wallet selecte
 
 - **MetaMask Won’t Connect**: Ensure you’re on “Anvil Local” and Anvil is running. Check the RPC URL matches.
 - **“Contract Not Found”**: Verify `VITE_CONTRACT_ADDRESS` in `frontend/.env` matches the deployed address.
-- **Backend Errors**: Confirm `VITE_BACKEND_URL` is correct and the backend is running.
+- **Backend Errors**: Confirm `VITE_API_URL` is correct and the backend is running.
 - **Still Stuck?**: Check each terminal for error messages and retrace the steps.
 
 ---

@@ -24,7 +24,7 @@ const db = Datastore.create({
 });
 
 // Create an index on the id field to ensure uniqueness
-db.ensureIndex({ fieldName: 'id', unique: true });
+void db.ensureIndex({ fieldName: 'id', unique: true });
 
 // Middleware
 app.use(cors());
@@ -52,71 +52,43 @@ app.get('/api/candidates', async (req, res) => {
   }
 });
 
-// POST - Create a new candidate
+// POST - Add/Update a candidate
 app.post('/api/candidates', async (req, res) => {
   try {
-    const id = Number(req.body.id);
-    const { name, bio } = req.body;
-
-    if (!id || !name) {
-      return res.status(400).json({ error: 'ID and name are required' });
-    }
-
-    // Check if candidate with this ID already exists
-    const existingCandidate = await db.findOne({ id });
-
-    if (existingCandidate) {
-      return res.status(409).json({ error: 'Candidate with this ID already exists' });
-    }
-
-    // Create new candidate
-    const newCandidate = {
-      id,
-      name,
-      bio: bio || ''
-    };
-
-    await db.insert(newCandidate);
-    res.status(201).json(newCandidate);
-  } catch (error) {
-    console.error('Error creating candidate:', error);
-
-    // Check for unique constraint violations
-    if (error.errorType === 'uniqueViolated') {
-      return res.status(409).json({ error: 'Candidate with this ID already exists' });
-    }
-
-    res.status(500).json({ error: 'Failed to create candidate' });
-  }
-});
-
-// PATCH - Update an existing candidate
-app.patch('/api/candidates/:id', async (req, res) => {
-  try {
-    const id = Number(req.params.id);
-    const { name, bio } = req.body;
+    const { id: userId, name, bio } = req.body;
+    const id = Number(userId);
 
     // Verify the candidate exists
     const existingCandidate = await db.findOne({ id });
 
     if (!existingCandidate) {
-      return res.status(404).json({ error: 'Candidate not found' });
+      if (!id || !name) {
+        return res.status(400).json({ error: 'ID and name are required' });
+      }
+
+      const data = {
+        id,
+        name,
+        bio: bio ?? ''
+      };
+      await db.insert(data);
+      res.status(201).json(data);
+    } else {
+      // Build object
+      let data = {};
+      if (name) data.name = name;
+      if (bio !== undefined) data.bio = bio;
+
+      // Update the candidate
+      await db.update({ id }, { $set: data });
+
+      // Get the updated candidate
+      const updatedCandidate = await db.findOne({ id });
+      res.json(updatedCandidate);
     }
-
-    // Build update object
-    const updateData = {};
-    if (name) updateData.name = name;
-    if (bio !== undefined) updateData.bio = bio;
-
-    // Update the candidate
-    await db.update({ id }, { $set: updateData });
-
-    // Get the updated candidate
-    const updatedCandidate = await db.findOne({ id });
-    res.json(updatedCandidate);
   } catch (error) {
-    console.error('Error updating candidate:', error);
-    res.status(500).json({ error: 'Failed to update candidate' });
+    console.error('Error creating/updating candidate:', error);
+    res.status(500).json({ error: 'Failed to creating/updating candidate' });
   }
 });
 
